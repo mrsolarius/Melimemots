@@ -1,0 +1,78 @@
+<div class="word-search-container">
+  <div class="header">
+    <div>
+      <h1>Mêlimemots</h1>
+      <h2>By Damanime & Solarius</h2>
+    </div>
+    <button class="new-game-btn" (click)="startNewGame()" [disabled]="isLoading">
+      {{ isLoading ? 'Chargement...' : 'Nouvelle Partie' }}
+    </button>
+  </div>
+
+  @if (error) {
+    <div class="error-message">
+      {{ error }}
+    </div>
+  }
+
+  @if (isLoading) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Génération de la grille...</p>
+    </div>
+  }
+
+  @if (!isLoading && gameState.grid.length > 0) {
+    <div class="game-content">
+      <div class="sidebar">
+        <h2>Mots à trouver</h2>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getProgress()"></div>
+        </div>
+        <p class="progress-text">
+          {{ gameState.foundWords.size }} / {{ gameState.words.length }} trouvés
+        </p>
+
+        <ul class="words-list">
+          @for (word of gameState.words; track word) {
+            <li [class.found]="isWordFound(word)">
+              {{ word }}
+              @if (isWordFound(word)) {
+                <span class="checkmark">✓</span>
+              }
+            </li>
+          }
+        </ul>
+
+        @if (isGameComplete()) {
+          <div class="victory-message">
+            <h3>🎉 Bravo !</h3>
+            <p>Tous les mots ont été trouvés !</p>
+            <p>🕑 en {{timeElapsed}}m</p>
+          </div>
+        }
+      </div>
+
+      <div class="grid-container">
+        <div
+          class="grid"
+          (mouseup)="onCellMouseUp()"
+          (mouseleave)="onCellMouseUp()"
+          [style.grid-template-columns]="'repeat(' + gameState.grid[0].length  + ', 1fr)'"
+        >
+          @for (row of gameState.grid; track row; let i = $index) {
+            @for (cell of row; track cell; let j = $index) {
+              <div
+                [class]="getCellClass(cell)"
+                (mousedown)="onCellMouseDown(cell)"
+                (mouseenter)="onCellMouseEnter(cell)"
+              >
+                {{ cell.letter }}
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
