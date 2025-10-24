@@ -28,6 +28,7 @@ export interface GameState {
   foundWords: Set<string>;
   selectedCells: Cell[];
   isSelecting: boolean;
+  lockedDirection?: [number, number]; // Direction verrouillée
 }
 
 export enum DirectionsEnum{
@@ -48,7 +49,7 @@ export const directionCoordinates: Record<DirectionsEnum, [number, number]> = {
   providedIn: 'root'
 })
 export class GameService {
-  private readonly apiUrl = 'http://localhost:4200/api'; // Ajuste selon ton backend
+  private readonly apiUrl = 'http://localhost:4200/api';
 
   private readonly gameStateSubject = new BehaviorSubject<GameState>({
     grid: [],
@@ -116,7 +117,8 @@ export class GameService {
     this.gameStateSubject.next({
       ...state,
       selectedCells: [cell],
-      isSelecting: true
+      isSelecting: true,
+      lockedDirection: undefined // Pas de direction verrouillée au début
     });
   }
 
@@ -126,16 +128,8 @@ export class GameService {
 
     const lastCell = state.selectedCells[state.selectedCells.length - 1];
 
-    // Vérifier si la sélection est en ligne droite
-    if (state.selectedCells.length > 1) {
-      const firstCell = state.selectedCells[0];
-      const dr = Math.sign(lastCell.row - firstCell.row);
-      const dc = Math.sign(lastCell.col - firstCell.col);
-      const expectedDr = Math.sign(cell.row - firstCell.row);
-      const expectedDc = Math.sign(cell.col - firstCell.col);
-
-      if (dr !== expectedDr || dc !== expectedDc) return;
-    }
+    // Ne pas sélectionner deux fois la même cellule
+    if (state.selectedCells.some(c => c.row === cell.row && c.col === cell.col)) return;
 
     // Vérifier que c'est une cellule adjacente
     const rowDiff = Math.abs(cell.row - lastCell.row);
@@ -144,13 +138,27 @@ export class GameService {
 
     if (!isAdjacent) return;
 
-    // Ne pas sélectionner deux fois la même cellule
-    if (state.selectedCells.some(c => c.row === cell.row && c.col === cell.col)) return;
+    // Calculer la direction actuelle
+    const dr = Math.sign(cell.row - lastCell.row);
+    const dc = Math.sign(cell.col - lastCell.col);
+    const currentDirection: [number, number] = [dr, dc];
+
+    // Si on a déjà une direction verrouillée (2+ cellules), vérifier qu'on reste dans cette direction
+    if (state.lockedDirection) {
+      const [lockedDr, lockedDc] = state.lockedDirection;
+      if (dr !== lockedDr || dc !== lockedDc) {
+        return; // Direction différente, on refuse
+      }
+    }
+
+    // Définir la direction verrouillée si c'est la deuxième cellule
+    const newLockedDirection = state.selectedCells.length === 1 ? currentDirection : state.lockedDirection;
 
     cell.isSelected = true;
     this.gameStateSubject.next({
       ...state,
-      selectedCells: [...state.selectedCells, cell]
+      selectedCells: [...state.selectedCells, cell],
+      lockedDirection: newLockedDirection
     });
   }
 
@@ -177,7 +185,8 @@ export class GameService {
         ...state,
         foundWords: newFoundWords,
         selectedCells: [],
-        isSelecting: false
+        isSelecting: false,
+        lockedDirection: undefined
       });
     } else {
       this.clearSelection();
@@ -225,7 +234,8 @@ export class GameService {
     this.gameStateSubject.next({
       ...state,
       selectedCells: [],
-      isSelecting: false
+      isSelecting: false,
+      lockedDirection: undefined
     });
   }
 
