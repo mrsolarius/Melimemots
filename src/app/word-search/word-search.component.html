@@ -4,14 +4,17 @@
       <h1>Mêlimemots</h1>
       <h2>By Damanime & Solarius</h2>
     </div>
-    <button class="new-game-btn" (click)="startNewGame()" [disabled]="isLoading">
+    <button class="new-game-btn" (click)="openNewGameDialog()" [disabled]="isLoading">
       {{ isLoading ? 'Chargement...' : 'Nouvelle Partie' }}
     </button>
   </div>
 
   @if (error) {
     <div class="error-message">
-      {{ error }}
+      <strong>❌ Erreur :</strong> {{ error }}
+      <button class="retry-btn" (click)="openNewGameDialog()">
+        Réessayer avec d'autres paramètres
+      </button>
     </div>
   }
 
@@ -48,7 +51,7 @@
           <div class="victory-message">
             <h3>🎉 Bravo !</h3>
             <p>Tous les mots ont été trouvés !</p>
-            <p>🕑 en {{timeElapsed}}m</p>
+            <p>🕑 en {{timeElapsed}}</p>
           </div>
         }
       </div>
@@ -76,3 +79,9 @@
     </div>
   }
 </div>
+
+<app-game-config-dialog
+  [isOpen]="isDialogOpen"
+  (close)="closeDialog()"
+  (confirm)="onConfigConfirm($event)"
+></app-game-config-dialog>

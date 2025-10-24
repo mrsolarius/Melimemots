@@ -1,14 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GameService, Cell, GameState } from '../services/game.service';
+import { GameConfigDialogComponent, GameConfig } from '../game-config-dialog/game-config-dialog.component';
 import { Subject, takeUntil } from 'rxjs';
-
-
 
 @Component({
   selector: 'app-word-search',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, GameConfigDialogComponent],
   templateUrl: './word-search.component.html',
   styleUrl: './word-search.component.scss'
 })
@@ -23,6 +22,7 @@ export class WordSearchComponent implements OnInit, OnDestroy {
 
   isLoading = false;
   error: string | null = null;
+  isDialogOpen = false;
 
   dateDebut: number = Date.now();
   timeElapsed: string = '0m 0s';
@@ -38,7 +38,15 @@ export class WordSearchComponent implements OnInit, OnDestroy {
         this.gameState = state;
       });
 
-    this.startNewGame();
+    // Charger une partie par défaut au démarrage
+    this.loadGame({
+      rows: 12,
+      cols: 12,
+      nombre: 5,
+      longueurMin: 3,
+      longueurMax: 10,
+      langue: 'fr'
+    });
   }
 
   ngOnDestroy(): void {
@@ -46,12 +54,32 @@ export class WordSearchComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  startNewGame(): void {
+  openNewGameDialog(): void {
+    this.isDialogOpen = true;
+  }
+
+  closeDialog(): void {
+    this.isDialogOpen = false;
+  }
+
+  onConfigConfirm(config: GameConfig): void {
+    this.isDialogOpen = false;
+    this.loadGame(config);
+  }
+
+  private loadGame(config: GameConfig): void {
     this.isLoading = true;
     this.error = null;
     this.dateDebut = Date.now();
 
-    this.gameService.loadGame(5, 'fr', 12, 12)
+    this.gameService.loadGame(
+      config.nombre,
+      config.langue,
+      config.rows,
+      config.cols,
+      config.longueurMin,
+      config.longueurMax
+    )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -59,8 +87,19 @@ export class WordSearchComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.isLoading = false;
-          this.error = 'Erreur lors du chargement du jeu. Vérifiez que le serveur backend est démarré.';
-          console.error(err);
+
+          // Gestion des erreurs spécifiques du backend
+          if (err.error?.detail) {
+            this.error = err.error.detail;
+          } else if (err.status === 0) {
+            this.error = 'Impossible de se connecter au serveur. Vérifiez que le backend est démarré.';
+          } else if (err.status >= 500) {
+            this.error = 'Erreur serveur. La grille n\'a pas pu être générée avec ces paramètres.';
+          } else {
+            this.error = 'Une erreur est survenue lors de la génération de la grille. Essayez avec d\'autres paramètres.';
+          }
+
+          console.error('Erreur lors du chargement:', err);
         }
       });
   }
@@ -99,11 +138,10 @@ export class WordSearchComponent implements OnInit, OnDestroy {
 
   isGameComplete(): boolean {
     this.timeElapsed = this.formatTimeElapsed((Date.now() - this.dateDebut)/60000);
-
     return this.gameService.isGameComplete();
   }
 
-  formatTimeElapsed(time:number): string {
+  formatTimeElapsed(time: number): string {
     const minutes = Math.floor(time);
     const seconds = Math.floor((time - minutes) * 60);
     return `${minutes}m ${seconds}s`;

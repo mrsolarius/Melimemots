@@ -63,11 +63,19 @@ export class GameService {
 
   constructor(private readonly http: HttpClient) {}
 
-  loadGame(nombre: number = 8, langue: string = 'fr', rows: number = 12, cols: number = 12): Observable<GridResponse> {
+  loadGame(
+    nombre: number = 8,
+    langue: string = 'fr',
+    rows: number = 12,
+    cols: number = 12,
+    longueurMin: number = 3,
+    longueurMax: number = 10
+  ): Observable<GridResponse> {
     const params = {
       nombre: nombre.toString(),
       langue,
-      longueur_min: '3',
+      longueur_min: longueurMin.toString(),
+      longueur_max: longueurMax.toString(),
       n_top: '10000',
       rows: rows.toString(),
       cols: cols.toString()

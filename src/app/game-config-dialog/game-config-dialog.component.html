@@ -1,0 +1,116 @@
+@if (isOpen) {
+  <div class="dialog-backdrop" (click)="onBackdropClick($event)">
+    <div class="dialog" [formGroup]="configForm">
+      <div class="dialog-header">
+        <h2>Configuration de la partie</h2>
+        <button class="close-btn" (click)="onClose()">&times;</button>
+      </div>
+
+      <div class="dialog-body">
+        @if (validationErrors.length > 0) {
+          <div class="validation-errors">
+            @for (error of validationErrors; track error) {
+              <div class="error-item">⚠️ {{ error }}</div>
+            }
+          </div>
+        }
+
+        <div class="form-group" [class.error]="isInvalid('rows')">
+          <label for="rows">Nombre de lignes</label>
+          <input
+            type="number"
+            id="rows"
+            formControlName="rows" min="5"
+            max="30"
+            class="form-control"
+          />
+          <small>Entre 5 et 30</small>
+          @if (isInvalid('rows')) {
+            <div class="error-message">{{ getFieldError('rows') }}</div>
+          }
+        </div>
+
+        <div class="form-group" [class.error]="isInvalid('cols')">
+          <label for="cols">Nombre de colonnes</label>
+          <input
+            type="number"
+            id="cols"
+            formControlName="cols" min="5"
+            max="30"
+            class="form-control"
+          />
+          <small>Entre 5 et 30</small>
+          @if (isInvalid('cols')) {
+            <div class="error-message">{{ getFieldError('cols') }}</div>
+          }
+        </div>
+
+        <div class="form-group" [class.error]="isInvalid('nombre')">
+          <label for="nombre">Nombre de mots</label>
+          <input
+            type="number"
+            id="nombre"
+            formControlName="nombre" min="1"
+            max="20"
+            class="form-control"
+          />
+          <small>Entre 1 et 20</small>
+          @if (isInvalid('nombre')) {
+            <div class="error-message">{{ getFieldError('nombre') }}</div>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" [class.error]="isInvalid('longueurMin')">
+            <label for="longueurMin">Longueur min des mots</label>
+            <input
+              type="number"
+              id="longueurMin"
+              formControlName="longueurMin" min="2"
+              max="15"
+              class="form-control"
+            />
+            <small>Entre 2 et 15</small>
+            @if (isInvalid('longueurMin')) {
+              <div class="error-message">{{ getFieldError('longueurMin') }}</div>
+            }
+          </div>
+
+          <div class="form-group" [class.error]="isInvalid('longueurMax')">
+            <label for="longueurMax">Longueur max des mots</label>
+            <input
+              type="number"
+              id="longueurMax"
+              formControlName="longueurMax" min="2"
+              max="20"
+              class="form-control"
+            />
+            <small>Entre 2 et 20</small>
+            @if (isInvalid('longueurMax')) {
+              <div class="error-message">{{ getFieldError('longueurMax') }}</div>
+            }
+          </div>
+        </div>
+
+        <div class="form-group" [class.error]="isInvalid('langue')">
+          <label for="langue">Langue</label>
+          <select id="langue" formControlName="langue" class="form-control"> <option value="fr">Français</option>
+            <option value="en">Anglais</option>
+          </select>
+          @if (isInvalid('langue')) {
+            <div class="error-message">{{ getFieldError('langue') }}</div>
+          }
+        </div>
+      </div>
+
+      <div class="dialog-footer">
+        <button class="btn btn-secondary" (click)="onClose()">
+          Annuler
+        </button>
+        <button class="btn btn-primary" (click)="onConfirm()">
+          Générer la grille
+        </button>
+      </div>
+    </div>
+  </div>
+}
