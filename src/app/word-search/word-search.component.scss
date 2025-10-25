@@ -31,6 +31,7 @@
     border-radius: 8px;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
+    touch-action: manipulation;
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
@@ -73,6 +74,7 @@
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
+    touch-action: manipulation;
 
     &:hover {
       background: #c33;
@@ -229,6 +231,7 @@
   gap: 4px;
   user-select: none;
   max-width: 100%;
+  touch-action: none; // Important : empêche le scroll/zoom pendant la sélection
 
   .cell {
     font-size: clamp(1rem, 3vw, 1.5rem);
@@ -242,6 +245,7 @@
     transition: all 0.15s ease;
     min-width: 40px;
     color: #2c3e50;
+    touch-action: none;
 
     &:hover:not(.found) {
       background: #e8e9f3;
@@ -263,6 +267,7 @@
       border-color: #4caf50;
       cursor: default;
       animation: foundCell 0.4s ease;
+      touch-action: none;
     }
   }
 }

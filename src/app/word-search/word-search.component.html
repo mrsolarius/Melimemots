@@ -61,14 +61,19 @@
           class="grid"
           (mouseup)="onCellMouseUp()"
           (mouseleave)="onCellMouseUp()"
+          (touchmove)="onGridTouchMove($event)"
+          (touchend)="onGridTouchEnd($event)"
           [style.grid-template-columns]="'repeat(' + gameState.grid[0].length  + ', 1fr)'"
         >
           @for (row of gameState.grid; track row; let i = $index) {
             @for (cell of row; track cell; let j = $index) {
               <div
                 [class]="getCellClass(cell)"
+                [attr.data-row]="i"
+                [attr.data-col]="j"
                 (mousedown)="onCellMouseDown(cell)"
                 (mouseenter)="onCellMouseEnter(cell)"
+                (touchstart)="onCellTouchStart($event, cell)"
               >
                 {{ cell.letter }}
               </div>

@@ -104,6 +104,7 @@ export class WordSearchComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Gestion de la souris
   onCellMouseDown(cell: Cell): void {
     if (cell.isFound) return;
     this.gameService.startSelection(cell);
@@ -117,6 +118,52 @@ export class WordSearchComponent implements OnInit, OnDestroy {
   }
 
   onCellMouseUp(): void {
+    this.gameService.endSelection();
+  }
+
+  // Gestion tactile
+  onCellTouchStart(event: TouchEvent, cell: Cell): void {
+    event.preventDefault(); // Empêcher le comportement par défaut (scroll, zoom)
+    if (cell.isFound) return;
+    this.gameService.startSelection(cell);
+  }
+
+  onCellTouchMove(event: TouchEvent): void {
+    event.preventDefault();
+    if (!this.gameState.isSelecting) return;
+
+    // Récupérer la position du doigt
+    const touch = event.touches[0];
+
+    // Trouver l'élément sous le doigt
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+
+    if (element?.classList.contains('cell')) {
+      // Récupérer les coordonnées de la cellule depuis les attributs data
+      const row = parseInt(element.getAttribute('data-row') || '-1');
+      const col = parseInt(element.getAttribute('data-col') || '-1');
+
+      if (row >= 0 && col >= 0) {
+        const cell = this.gameState.grid[row]?.[col];
+        if (cell && !cell.isFound) {
+          this.gameService.continueSelection(cell);
+        }
+      }
+    }
+  }
+
+  onCellTouchEnd(event: TouchEvent): void {
+    event.preventDefault();
+    this.gameService.endSelection();
+  }
+
+  onGridTouchMove(event: TouchEvent): void {
+    // Déléguer au gestionnaire de cellule
+    this.onCellTouchMove(event);
+  }
+
+  onGridTouchEnd(event: TouchEvent): void {
+    event.preventDefault();
     this.gameService.endSelection();
   }
 
