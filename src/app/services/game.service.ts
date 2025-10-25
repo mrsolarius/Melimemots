@@ -49,7 +49,7 @@ export const directionCoordinates: Record<DirectionsEnum, [number, number]> = {
   providedIn: 'root'
 })
 export class GameService {
-  private readonly apiUrl = 'http://localhost:4200/api';
+  private readonly apiUrl = '/api';
 
   private readonly gameStateSubject = new BehaviorSubject<GameState>({
     grid: [],
